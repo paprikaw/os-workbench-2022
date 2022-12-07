@@ -12,7 +12,8 @@ int main(int argc, char *argv[])
   // }
   // assert(!argv[argc]);
   FILE *stream = fopen("/proc", "r");
-  while ((fscanf(stream, "%d", &process_id) > 0))
+  int number1;
+  while (((number1 = fscanf(stream, "%d", &process_id)) > 0))
   {
     printf("%d\n", process_id);
   }
