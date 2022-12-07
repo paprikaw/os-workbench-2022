@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    printf("%d", errno);
+    printf("%s\n", strerror(errno));
   }
   closedir(dir_stream);
   return 0;
