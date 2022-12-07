@@ -21,6 +21,6 @@ int main(int argc, char *argv[])
     while ((dir = readdir(dir_stream)) != NULL)
       printf("%s", dir->d_name);
   }
-  pclose(dir_stream);
+  closedir(dir_stream);
   return 0;
 }
