@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
   if (dir_stream != NULL)
   {
     while ((dir = readdir(dir_stream)) != NULL)
-      printf(dir->d_name);
+      printf("%s", dir->d_name);
   }
   close(dir);
   return 0;
