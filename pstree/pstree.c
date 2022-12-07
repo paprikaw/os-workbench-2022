@@ -18,12 +18,16 @@ int main(int argc, char *argv[])
   //   printf("argv[%d] = %s\n", i, argv[i]);
   // }
   // assert(!argv[argc]);
-  dir_stream = opendir("/proc/1/fd");
+  dir_stream = opendir("/proc");
 
   if (dir_stream != NULL)
   {
+    int tmp;
     while ((dir = readdir(dir_stream)) != NULL)
-      printf("%s\n", dir->d_name);
+    {
+      if (sscanf(dir->d_name, "%d", &tmp) > 0)
+        printf("%s\n", dir->d_name);
+    }
   }
   else
   {
