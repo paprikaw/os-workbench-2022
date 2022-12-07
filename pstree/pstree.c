@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <errno.h>
+#include <string.h>
 #define MAX_LINE 1024
 char *line_buf[MAX_LINE];
 
