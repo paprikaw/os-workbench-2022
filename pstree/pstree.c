@@ -2,7 +2,8 @@
 #include <assert.h>
 #define MAX_BUF 1024
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   int process_id;
 
   // for (int i = 0; i < argc; i++) {
@@ -11,8 +12,10 @@ int main(int argc, char *argv[]) {
   // }
   // assert(!argv[argc]);
   FILE *stream = fopen("/proc", "r");
-  while ((fscanf(stream, "%d", &process_id) > 0)) {
+  while ((fscanf(stream, "%d", &process_id) > 0))
+  {
     printf("%d\n", process_id);
   }
+  fclose(stream);
   return 0;
 }
