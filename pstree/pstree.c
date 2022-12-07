@@ -2,7 +2,6 @@
 #include <assert.h>
 #include <sys/types.h>
 #include <dirent.h>
-#include <error.h>
 #define MAX_LINE 1024
 char *line_buf[MAX_LINE];
 
@@ -18,10 +17,15 @@ int main(int argc, char *argv[])
   // }
   // assert(!argv[argc]);
   dir_stream = opendir("/proc/1/fd");
+
   if (dir_stream != NULL)
   {
     while ((dir = readdir(dir_stream)) != NULL)
       printf("%s\n", dir->d_name);
+  }
+  else
+  {
+    printf("%d", errno);
   }
   closedir(dir_stream);
   return 0;
