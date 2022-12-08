@@ -61,8 +61,7 @@ int main(int argc, char *argv[])
 
       if ((cur_prev = get_ppid(process_id) == -1))
       {
-        printf("%s", "error happening when getting ppid\n");
-        exit(1);
+        continue;
       }
       cur->pid = process_id;
       cur->prev = cur_prev;
@@ -82,9 +81,14 @@ pid_t get_ppid(pid_t cur_pid)
   char buf[MAX_LINE];
   pid_t pid;
   int sucess_match;
+  FILE *file_stat;
   // 构建对应的stat
   sprintf(buf, "/proc/%d/stat", cur_pid);
-  FILE *file_stat = fopen(buf, "r");
+  if (!(file_stat = fopen(buf, "r")))
+  {
+    return -1;
+  }
+
   sucess_match = fscanf(file_stat, "%*d %*s %*c %d", &pid);
 
   // check for successful mathces
