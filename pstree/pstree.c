@@ -84,7 +84,7 @@ pid_t get_ppid(pid_t cur_pid)
   pid_t pid;
   int sucess_match;
   // 构建对应的stat
-  sprintf(buf, "/proc/%d/stat");
+  sprintf(buf, "/proc/%d/stat", cur_pid);
   FILE *file_stat = fopen(buf, "r");
   sucess_match = fscanf(file_stat, "%*d %*s %*c %d", &pid);
 
