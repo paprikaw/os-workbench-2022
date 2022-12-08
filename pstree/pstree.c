@@ -67,16 +67,18 @@ int main(int argc, char *argv[])
       cur->prev = cur_prev;
       cur++;
     }
-    cur = NULL;
+    cur->pid = 0;
+    cur->prev = 0;
   }
   else
   {
     printf("%s\n", strerror(errno));
   }
   Pprev *cur = id_array;
-  while (++cur)
+  while (cur->pid != 0)
   {
     printf("pid: %d prev: %d\n", cur->pid, cur->prev);
+    cur++;
   }
   closedir(dir_stream);
   return 0;
