@@ -65,13 +65,19 @@ int main(int argc, char *argv[])
       }
       cur->pid = process_id;
       cur->prev = cur_prev;
+      cur++;
     }
+    cur = NULL;
   }
   else
   {
     printf("%s\n", strerror(errno));
   }
-
+  Pprev *cur = id_array;
+  while (++cur)
+  {
+    printf("pid: %d prev: %d\n", cur->pid, cur->prev);
+  }
   closedir(dir_stream);
   return 0;
 }
