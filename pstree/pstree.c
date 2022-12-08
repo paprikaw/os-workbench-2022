@@ -58,8 +58,8 @@ int main(int argc, char *argv[])
       {
         continue;
       }
-
-      if ((cur_prev = get_ppid(process_id)) == -1)
+      // when ppid is equal to 0 or get_ppid raise error
+      if ((cur_prev = get_ppid(process_id)) <= 0)
       {
         continue;
       }
