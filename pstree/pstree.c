@@ -97,7 +97,7 @@ pid_t get_ppid(pid_t cur_pid)
     return -1;
   }
 
-  sucess_match = fscanf(file_stat, "%*d %*s %*c %d", &pid);
+  sucess_match = fscanf(file_stat, "%*d %*s %*c %d ", &pid);
 
   // check for successful mathces
   if (sucess_match == EOF)
