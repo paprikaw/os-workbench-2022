@@ -56,8 +56,7 @@ int main(int argc, char *argv[])
       }
       else if (scanf_num < 1)
       {
-        printf("%s", "matching error\n");
-        exit(1);
+        continue;
       }
 
       if ((cur_prev = get_ppid(process_id) == -1))
