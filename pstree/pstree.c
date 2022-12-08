@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
         continue;
       }
 
-      if ((cur_prev = get_ppid(process_id) == -1))
+      if ((cur_prev = get_ppid(process_id)) == -1)
       {
         continue;
       }
