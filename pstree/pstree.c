@@ -14,13 +14,15 @@ typedef struct pnode
 {
   pid_t pid;
   struct pnode *childs;
-  char pname[MAX_LINE];
+  struct pnode *next;
+  char *pname; // needs to be freed
 } Pnode;
 
 typedef struct pprev
 {
   pid_t pid;
   pid_t prev;
+  char *pname; // needs to be freed
 } Pprev;
 
 pid_t get_ppid(pid_t cur_pid);
@@ -34,6 +36,11 @@ int main(int argc, char *argv[])
   int process_id;
   Pprev id_array[MAX_PROCESS];
 
+  Pnode *process_tree;
+  init_pnode(process_tree);
+  process_tree->pid = 0;
+  process_tree->pname = "root";
+
   /*
   从/proc目录中去读取每一个进程的信息, 并且创建一个列表。包含
   当前内存中的processid和parent process id
@@ -46,29 +53,34 @@ int main(int argc, char *argv[])
     Pprev *cur = id_array;
     int cur_index = 0;
     int cur_prev;
+    char *pname;
+
     while ((dir = readdir(dir_stream)) != NULL)
     {
       scanf_num = sscanf(dir->d_name, "%d", &process_id);
       if (scanf_num == EOF)
       {
-        printf("%s", strerror(errno));
+        printf("sscanf error: %s", strerror(errno));
         exit(1);
       }
-      else if (scanf_num < 1)
+      else if (scanf_num < 1) // 没有扫描到
+      {
+        printf("%s", "sscanf error: didn't match");
+        continue;
+      }
+
+      // get process parent and name
+      if (((cur_prev = get_ppid(process_id)) < 0) || ((pname = get_pname(process_id, pname)) < 0))
       {
         continue;
       }
-      // when ppid is equal to 0 or get_ppid raise error
-      if ((cur_prev = get_ppid(process_id)) < 0)
-      {
-        continue;
-      }
+
       cur->pid = process_id;
       cur->prev = cur_prev;
+      cur->pname = pname;
       cur++;
     }
-    cur->pid = 0;
-    cur->prev = 0;
+    cur = NULL;
   }
   else
   {
@@ -76,12 +88,7 @@ int main(int argc, char *argv[])
   }
 
   // build tree
-  Pprev *cur = id_array;
-  while (cur->pid != 0)
-  {
-    printf("pid: %d prev: %d\n", cur->pid, cur->prev);
-    cur++;
-  }
+  recursive_buid_tree(id_array, process_tree);
   closedir(dir_stream);
   return 0;
 }
@@ -102,7 +109,6 @@ pid_t get_ppid(pid_t cur_pid)
   }
 
   sucess_match = fscanf(file_stat, "%*d %*s %*c %d ", &pid);
-
   // check for successful mathces
   if (sucess_match == EOF)
   {
@@ -118,9 +124,62 @@ pid_t get_ppid(pid_t cur_pid)
 }
 
 /*
+get ppid given a pid
+ */
+int get_pname(pid_t cur_pid, char *buf)
+{
+  int sucess_match;
+  FILE *file_stat;
+  // 构建对应的stat
+  sprintf(buf, "/proc/%d/stat", cur_pid);
+  if (!(file_stat = fopen(buf, "r")))
+  {
+    return -1;
+  }
+
+  sucess_match = fscanf(file_stat, "%*d (%m[a-zA-Z])", buf);
+  // check for successful mathces
+  if (sucess_match == EOF)
+  {
+    strerror(errno);
+    return -1;
+  }
+  return sucess_match;
+}
+
+/*
 routine for operate process tree
 */
-void buid_tree(Pprev *prevList, int index)
+void recursive_buid_tree(Pprev *prevList, Pnode *curNode)
 {
-  Pprev *cur = prevList;
+  pid_t ppid = curNode->pid;
+  Pprev *curPrev = prevList;
+  Pnode **curPnodePtr = &(curNode->childs);
+
+  while (curPrev != NULL)
+  {
+    if (curPrev->prev == ppid)
+    {
+      // 创建一个新的node
+      Pnode *new_node = malloc(sizeof(Pnode));
+      init_pnode(new_node);
+      // 将ppid和目前的node匹配的node的信息复制到child里面
+      new_node->pid = curPrev->pid;
+      new_node->pname = curPrev->pname;
+      // 对于这个新的node，建树
+      // 终止条件: 当前tree node无法找到children
+      recursive_buid_tree(prevList, new_node);
+
+      // 将当前这个new node赋给pointer的指针
+      *curPnodePtr = new_node;
+      curPnodePtr = &(new_node->next);
+    }
+    curPrev++;
+  }
+}
+
+void init_pnode(Pnode *node)
+{
+  node->childs = NULL;
+  node->next = NULL;
 }
