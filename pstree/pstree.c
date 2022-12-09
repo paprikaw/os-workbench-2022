@@ -38,12 +38,7 @@ int main(int argc, char *argv[])
   DIR *dir_stream;
   int process_id;
   Pprev id_array[MAX_PROCESS];
-
-  Pnode *process_tree = NULL;
-  init_pnode(process_tree);
-  process_tree->pid = 0;
-  process_tree->pname = "root";
-
+  Pnode process_tree = {0, NULL, NULL, "root"};
   /*
   从/proc目录中去读取每一个进程的信息, 并且创建一个列表。包含
   当前内存中的processid和parent process id
