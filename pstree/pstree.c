@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
   // build tree
   while (cur != NULL)
   {
-    printf("pname: %s, pid: %d,  ppid: %d", cur->pname, cur->pid, cur->prev);
+    printf("pname: %s, pid: %d,  ppid: %d\n", cur->pname, cur->pid, cur->prev);
     cur++;
   }
 
