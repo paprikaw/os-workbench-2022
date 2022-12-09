@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
   while (cur != NULL)
   {
     printf("pname: %s, pid: %d,  ppid: %d", cur->pname, cur->pid, cur->prev);
+    cur++;
   }
 
   recursive_buid_tree(id_array, &process_tree);
