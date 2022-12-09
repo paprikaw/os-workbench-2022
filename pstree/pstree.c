@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
   }
 
   // build tree
-  recursive_buid_tree(id_array, process_tree);
+  recursive_buid_tree(id_array, &process_tree);
   closedir(dir_stream);
   return 0;
 }
