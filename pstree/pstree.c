@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
         printf("sscanf error: %s", strerror(errno));
         exit(1);
       }
-      else if (scanf_num < 1) // 当前的 
+      else if (scanf_num < 1) // 当前的
       {
         continue;
       }
@@ -127,8 +127,9 @@ int get_pname(pid_t cur_pid, char *buf)
 {
   int sucess_match;
   FILE *file_stat;
+  char *path_buf[MAX_LINE];
   // 构建对应的stat
-  sprintf(buf, "/proc/%d/stat", cur_pid);
+  sprintf(path_buf, "/proc/%d/stat", cur_pid);
   if (!(file_stat = fopen(buf, "r")))
   {
     return -1;
