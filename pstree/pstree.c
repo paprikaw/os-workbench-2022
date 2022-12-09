@@ -84,7 +84,13 @@ int main(int argc, char *argv[])
     printf("%s\n", strerror(errno));
   }
 
+  Pprev *cur = id_array;
   // build tree
+  while (cur != NULL)
+  {
+    printf("pname: %s, pid: %d,  ppid: %d", cur->pname, cur->pid, cur->prev);
+  }
+
   recursive_buid_tree(id_array, &process_tree);
   closedir(dir_stream);
   return 0;
