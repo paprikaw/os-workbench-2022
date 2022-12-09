@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     Pprev *cur = id_array;
     int cur_index = 0;
     int cur_prev;
-    char *pname;
+    char *pname = NULL;
 
     while ((dir = readdir(dir_stream)) != NULL)
     {
