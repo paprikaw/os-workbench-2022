@@ -140,7 +140,7 @@ int get_pname(pid_t cur_pid, char *buf)
     return -1;
   }
 
-  sucess_match = fscanf(file_stat, "%*d (%m[a-zA-Z])", buf);
+  sucess_match = fscanf(file_stat, "%*d (%m[a-zA-Z])", &buf);
   // check for successful mathces
   if (sucess_match == EOF)
   {
