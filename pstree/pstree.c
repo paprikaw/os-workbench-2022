@@ -25,6 +25,7 @@ typedef struct pprev
   char *pname; // needs to be freed
 } Pprev;
 
+void init_pnode(Pnode *node);
 pid_t get_ppid(pid_t cur_pid);
 char *line_buf[MAX_LINE];
 Pnode *root_pnode;
