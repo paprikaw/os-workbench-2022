@@ -123,5 +123,4 @@ routine for operate process tree
 void buid_tree(Pprev *prevList, int index)
 {
   Pprev *cur = prevList;
-  while (cur->pid !=)
 }
