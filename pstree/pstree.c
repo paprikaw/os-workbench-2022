@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
   int process_id;
   Pprev id_array[MAX_PROCESS];
 
-  Pnode *process_tree;
+  Pnode *process_tree = NULL;
   init_pnode(process_tree);
   process_tree->pid = 0;
   process_tree->pname = "root";
