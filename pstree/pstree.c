@@ -61,9 +61,8 @@ int main(int argc, char *argv[])
         printf("sscanf error: %s", strerror(errno));
         exit(1);
       }
-      else if (scanf_num < 1) // 没有扫描到
+      else if (scanf_num < 1) // 当前的 
       {
-        printf("%s", "sscanf error: didn't match");
         continue;
       }
 
