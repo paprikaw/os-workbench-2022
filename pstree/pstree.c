@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
         continue;
       }
       // when ppid is equal to 0 or get_ppid raise error
-      if ((cur_prev = get_ppid(process_id)) <= 0)
+      if ((cur_prev = get_ppid(process_id)) < 0)
       {
         continue;
       }
@@ -74,6 +74,8 @@ int main(int argc, char *argv[])
   {
     printf("%s\n", strerror(errno));
   }
+
+  // build tree
   Pprev *cur = id_array;
   while (cur->pid != 0)
   {
@@ -83,7 +85,9 @@ int main(int argc, char *argv[])
   closedir(dir_stream);
   return 0;
 }
-
+/*
+get ppid given a pid
+ */
 pid_t get_ppid(pid_t cur_pid)
 {
   char buf[MAX_LINE];
@@ -111,4 +115,13 @@ pid_t get_ppid(pid_t cur_pid)
   }
 
   return pid;
+}
+
+/*
+routine for operate process tree
+*/
+void buid_tree(Pprev *prevList, int index)
+{
+  Pprev *cur = prevList;
+  while (cur->pid !=)
 }
