@@ -127,7 +127,7 @@ int get_pname(pid_t cur_pid, char *buf)
 {
   int sucess_match;
   FILE *file_stat;
-  char *path_buf[MAX_LINE];
+  char path_buf[MAX_LINE];
   // 构建对应的stat
   sprintf(path_buf, "/proc/%d/stat", cur_pid);
   if (!(file_stat = fopen(buf, "r")))
