@@ -167,7 +167,7 @@ void recursive_buid_tree(Pprev *prevList, Pnode *curNode)
   Pprev *curPrev = prevList;
   Pnode **curPnodePtr = &(curNode->childs);
 
-  while (curPrev != NULL)
+  while (curPrev->pid != -1)
   {
     if (curPrev->prev == ppid)
     {
