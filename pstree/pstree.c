@@ -201,38 +201,6 @@ void init_pnode(Pnode *node)
   node->next = NULL;
 }
 
-/*
-routine for operate process tree
-*/
-void recursive_buid_tree(Pprev *prevList, Pnode *curNode)
-{
-  pid_t ppid = curNode->pid;
-  Pprev *curPrev = prevList;
-  Pnode **curPnodePtr = &(curNode->childs);
-
-  while (curPrev->pid != -1)
-  {
-    if (curPrev->prev == ppid)
-    {
-      // 创建一个新的node
-      Pnode *new_node = malloc(sizeof(Pnode));
-      init_pnode(new_node);
-      // 将ppid和目前的node匹配的node的信息复制到child里面
-      new_node->pid = curPrev->pid;
-      new_node->pname = curPrev->pname;
-
-      // 对于这个新的node，建树
-      // 终止条件: 当前tree node无法找到children
-      recursive_buid_tree(prevList, new_node);
-
-      // 将当前这个new node赋给pointer的指针
-      *curPnodePtr = new_node;
-      curPnodePtr = &(new_node->next);
-    }
-    curPrev++;
-  }
-}
-
 void print_tree(Pnode *tree)
 {
   int cur_size;
