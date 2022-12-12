@@ -143,7 +143,7 @@ int get_pname(pid_t cur_pid, char *buf)
 
   // 构建对应的stat
   sprintf(path_buf, "/proc/%d/stat", cur_pid);
-  if (!(file_stat = fopen(buf, "r")))
+  if (!(file_stat = fopen(path_buf, "r")))
   {
     return -1;
   }
