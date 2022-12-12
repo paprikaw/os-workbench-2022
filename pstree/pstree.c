@@ -211,7 +211,7 @@ void print_tree(Pnode *tree)
     {
       printf(" ");
     }
-    printf("|-");
+    printf("|");
   }
 
   cur_size = printf("--%s", tree->pname);
