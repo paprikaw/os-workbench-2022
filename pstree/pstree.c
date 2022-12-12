@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
       }
 
       // get process parent and name
-      if (!((cur_prev = get_ppid(process_id)) >= 0) && !(get_pname(process_id, pname) >= 0))
+      if (((cur_prev = get_ppid(process_id)) < 0) && (get_pname(process_id, pname) < 0))
       {
         continue;
       }
