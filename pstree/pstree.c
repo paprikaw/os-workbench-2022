@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
       cur->pname = pname;
       cur++;
     }
-    cur = NULL;
+    cur->pid = -1;
   }
   else
   {
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 
   Pprev *cur = id_array;
   // build tree
-  while (cur != NULL)
+  while (cur->pid != -1)
   {
     printf("pname: %s, pid: %d,  ppid: %d\n", cur->pname, cur->pid, cur->prev);
     cur++;
