@@ -26,7 +26,7 @@ typedef struct pprev
 } Pprev;
 
 void recursive_buid_tree(Pprev *prevList, Pnode *curNode);
-int get_pname(pid_t cur_pid, char *buf);
+int get_pname(pid_t cur_pid, char **buf);
 void init_pnode(Pnode *node);
 pid_t get_ppid(pid_t cur_pid);
 char *line_buf[MAX_LINE];
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
       }
 
       // get process parent and name
-      if (((cur_prev = get_ppid(process_id)) < 0) || (get_pname(process_id, pname) < 0))
+      if (((cur_prev = get_ppid(process_id)) < 0) || (get_pname(process_id, &pname) < 0))
       {
         continue;
       }
@@ -130,7 +130,7 @@ pid_t get_ppid(pid_t cur_pid)
 /*
 get ppid given a pid
  */
-int get_pname(pid_t cur_pid, char *buf)
+int get_pname(pid_t cur_pid, char **buf)
 {
   int sucess_match;
   FILE *file_stat;
@@ -148,7 +148,7 @@ int get_pname(pid_t cur_pid, char *buf)
     return -1;
   }
 
-  sucess_match = fscanf(file_stat, "%*d (%m[a-zA-Z])", &buf);
+  sucess_match = fscanf(file_stat, "%*d (%m[a-zA-Z])", buf);
   // check for successful mathces
   if (sucess_match == EOF)
   {
