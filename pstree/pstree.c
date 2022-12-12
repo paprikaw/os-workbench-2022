@@ -137,7 +137,7 @@ int get_pname(pid_t cur_pid, char **buf)
   char path_buf[MAX_LINE];
   if (cur_pid == 0)
   {
-    sprintf(buf, "%s", "root");
+    sprintf(*buf, "%s", "root");
     return 1;
   }
 
