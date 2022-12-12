@@ -31,6 +31,8 @@ void init_pnode(Pnode *node);
 pid_t get_ppid(pid_t cur_pid);
 char *line_buf[MAX_LINE];
 Pnode *root_pnode;
+int cur_length = 0;
+int is_first_pos = 1;
 
 int main(int argc, char *argv[])
 {
@@ -93,9 +95,11 @@ int main(int argc, char *argv[])
   }
 
   recursive_buid_tree(id_array, &process_tree);
+  print_tree(&process_tree);
   closedir(dir_stream);
   return 0;
 }
+
 /*
 get ppid given a pid
  */
@@ -194,4 +198,66 @@ void init_pnode(Pnode *node)
 {
   node->childs = NULL;
   node->next = NULL;
+}
+
+/*
+routine for operate process tree
+*/
+void recursive_buid_tree(Pprev *prevList, Pnode *curNode)
+{
+  pid_t ppid = curNode->pid;
+  Pprev *curPrev = prevList;
+  Pnode **curPnodePtr = &(curNode->childs);
+
+  while (curPrev->pid != -1)
+  {
+    if (curPrev->prev == ppid)
+    {
+      // 创建一个新的node
+      Pnode *new_node = malloc(sizeof(Pnode));
+      init_pnode(new_node);
+      // 将ppid和目前的node匹配的node的信息复制到child里面
+      new_node->pid = curPrev->pid;
+      new_node->pname = curPrev->pname;
+
+      // 对于这个新的node，建树
+      // 终止条件: 当前tree node无法找到children
+      recursive_buid_tree(prevList, new_node);
+
+      // 将当前这个new node赋给pointer的指针
+      *curPnodePtr = new_node;
+      curPnodePtr = &(new_node->next);
+    }
+    curPrev++;
+  }
+}
+
+void print_tree(Pnode *tree)
+{
+  int cur_size;
+
+  if (is_first_pos)
+  {
+    for (int i = 0; i < cur_length - 1; i++)
+    {
+      printf(" ");
+    }
+    printf("|-");
+  }
+
+  cur_size = printf("--%s", tree->pname);
+  Pnode *cur = tree->childs;
+  if (cur == NULL)
+  {
+    printf("\n");
+    is_first_pos = 1;
+    return;
+  }
+  cur_length += cur_size;
+  while (cur != NULL)
+  {
+    print_tree(cur);
+    cur = cur->next;
+  }
+  cur_length -= cur_size;
 }
