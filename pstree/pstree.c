@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
       }
 
       // get process parent and name
-      if (((cur_prev = get_ppid(process_id)) < 0) && (get_pname(process_id, pname) < 0))
+      if (((cur_prev = get_ppid(process_id)) < 0) || (get_pname(process_id, pname) < 0))
       {
         continue;
       }
@@ -135,6 +135,12 @@ int get_pname(pid_t cur_pid, char *buf)
   int sucess_match;
   FILE *file_stat;
   char path_buf[MAX_LINE];
+  if (cur_pid == 0)
+  {
+    sprintf(buf, "%s", "root");
+    return 1;
+  }
+
   // 构建对应的stat
   sprintf(path_buf, "/proc/%d/stat", cur_pid);
   if (!(file_stat = fopen(buf, "r")))
