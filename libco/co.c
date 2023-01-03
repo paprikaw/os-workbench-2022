@@ -25,12 +25,12 @@ typedef struct co
   void (*func)(void *); // co_start 指定的入口地址和参数
   void *arg;
 
-  enum co_status status; // 协程的状态
-  struct co *waiter;     // 是否有其他协程在等待当前协程
-  jmp_buf context;       // 寄存器现场 (setjmp.h)
-  int index;             // 协程的在线程池中的index
-  uint8_t padding[STACK_SIZE]; // 协程的堆栈
-  uint8_t stack[STACK_SIZE];   // 协程的堆栈
+  enum co_status status;     // 协程的状态
+  struct co *waiter;         // 是否有其他协程在等待当前协程
+  jmp_buf context;           // 寄存器现场 (setjmp.h)
+  int index;                 // 协程的在线程池中的index
+  uint8_t padding[2];        // 16字节padding
+  uint8_t stack[STACK_SIZE]; // 协程的堆栈
 } CO;
 
 CO *co_pool[CO_POOL_SIZE]; // 用来储存所有的协程
