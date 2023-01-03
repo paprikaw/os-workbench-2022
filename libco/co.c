@@ -40,6 +40,7 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg);
 int rand_index(int length);
 CO *create_co(const char *name, void (*func)(void *), void *arg, enum co_status status, CO *waiter);
 int add_to_pool(CO *new_context);
+clean_co(CO *co);
 
 /* 协程库主要的routine */
 CO *co_start(const char *name, void (*func)(void *), void *arg)
