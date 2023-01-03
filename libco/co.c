@@ -96,10 +96,14 @@ void co_yield ()
     // 随机挑选一个状态为RUNNING或者NEW的协程
     int index = rand_index(CO_POOL_SIZE);
     CO *next_co = co_pool[index];
-    while ((next_co->status != CO_RUNNING) && (next_co->status != CO_NEW))
+    while (next_co != NULL)
     {
-      index = rand_index(CO_POOL_SIZE);
-      next_co = co_pool[index];
+      if ((next_co->status != CO_RUNNING) && (next_co->status != CO_NEW))
+      {
+
+        index = rand_index(CO_POOL_SIZE);
+        next_co = co_pool[index];
+      }
     }
 
     // 跳转到这个协程
@@ -142,7 +146,7 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg)
 // Given a length of an array, return a random index
 int rand_index(int length)
 {
-  
+
   return rand() % length;
 }
 
