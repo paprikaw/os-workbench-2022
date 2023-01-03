@@ -66,28 +66,24 @@ CO *co_start(const char *name, void (*func)(void *), void *arg)
 
 void co_wait(CO *co)
 {
-  // 如果协程已经结束了, 释放资源
-  if (co->status == CO_DEAD)
-  {
-    free(co);
-    return;
-  }
   // 现在还在main函数里面，需要在线程库里面创建main函数协程
   if (current == NULL)
   {
     current = create_co("main", NULL, NULL, CO_WAITING, NULL);
-    co->waiter = current;
   }
-
+  co->waiter = current;
   current->status = CO_WAITING;
   // 开始执行协程
+  co_yield ();
+  // 协程已经执行结束，清理协程的structure
+  free(co);
+  // 将本协程的状态重新切换为running，然后开始随机选择协程运行
+  current->status = CO_RUNNING;
   co_yield ();
 }
 
 void co_yield ()
 {
-  // 每一次调用co_yield的时候，都进行一次wait_process的checking工作
-
   // 进行当前协程的现场保存
   int val = setjmp(current->context);
   // 第一次执行co_yield, setjump返回真的value
@@ -111,6 +107,7 @@ void co_yield ()
     {
       current->status = CO_RUNNING;
       stack_switch_call(current->stack, current->func, (uintptr_t)current->arg);
+      current->status = CO_DEAD;
     }
     else
     {
