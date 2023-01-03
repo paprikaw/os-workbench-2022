@@ -28,6 +28,7 @@ typedef struct co
   enum co_status status;     // 协程的状态
   struct co *waiter;         // 是否有其他协程在等待当前协程
   jmp_buf context;           // 寄存器现场 (setjmp.h)
+  int index;                 // 协程的在线程池中的index
   uint8_t stack[STACK_SIZE]; // 协程的堆栈
 } CO;
 
@@ -44,16 +45,7 @@ CO *co_start(const char *name, void (*func)(void *), void *arg)
 {
   // 创建一个新的携程context
   CO *new_context = create_co(name, func, arg, CO_NEW, NULL);
-  int is_added_to_pool = 0;
-  for (int i = 0; i < CO_POOL_SIZE; i++)
-  {
-    if (co_pool[i] == NULL)
-    {
-      co_pool[i] = new_context;
-      is_added_to_pool = 1;
-      break;
-    }
-  }
+  int is_added_to_pool = add_to_pool(new_context);
 
   // 如果协程池已经满了，则返回NULL
   if (!is_added_to_pool)
@@ -66,16 +58,20 @@ CO *co_start(const char *name, void (*func)(void *), void *arg)
 
 void co_wait(CO *co)
 {
-  // 现在还在main函数里面，需要在线程库里面创建main函数协程
+  // 当main函数第一次调用co_wait的时候，由于main本身
+  // 也是一个协程，所以需要将main本身也加入到协程池中
   if (current == NULL)
   {
     current = create_co("main", NULL, NULL, CO_WAITING, NULL);
+    add_to_pool(current);
   }
+
   co->waiter = current;
   current->status = CO_WAITING;
   // 开始执行协程
   co_yield ();
-  // 协程已经执行结束，清理协程的structure
+  // 协程已经执行结束，清理协程的structure, 并且释放协程池中的协程
+  co_pool[co->index] = NULL;
   free(co);
   // 将本协程的状态重新切换为running，然后开始随机选择协程运行
   current->status = CO_RUNNING;
@@ -160,4 +156,22 @@ CO *create_co(const char *name, void (*func)(void *), void *arg, enum co_status 
   new_context->status = status;
   new_context->waiter = waiter;
   return new_context;
+}
+
+// 将一个协程加入到协程池中
+// 加入成功，返回0，失败返回1
+int add_to_pool(CO *new_context)
+{
+  int is_added_to_pool = 0;
+  for (int i = 0; i < CO_POOL_SIZE; i++)
+  {
+    if (co_pool[i] == NULL)
+    {
+      co_pool[i] = new_context;
+      new_context->index = i;
+      is_added_to_pool = 1;
+      break;
+    }
+  }
+  return is_added_to_pool;
 }
