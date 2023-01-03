@@ -30,6 +30,7 @@ typedef struct co
   jmp_buf context;       // 寄存器现场 (setjmp.h)
   int index;             // 协程的在线程池中的index
   long int padding;
+  long int padding2;
   uint8_t stack[STACK_SIZE]; // 协程的堆栈
 } CO;
 
