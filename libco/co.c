@@ -142,6 +142,7 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg)
 // Given a length of an array, return a random index
 int rand_index(int length)
 {
+  
   return rand() % length;
 }
 
