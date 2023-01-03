@@ -105,6 +105,7 @@ void co_yield ()
       current->status = CO_RUNNING;
       stack_switch_call(current->stack, current->func, (uintptr_t)current->arg);
       current->status = CO_DEAD;
+      current = current->waiter;
     }
     else
     {
