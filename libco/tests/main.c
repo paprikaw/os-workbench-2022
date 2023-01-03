@@ -141,7 +141,7 @@ int main()
     setvbuf(stdout, NULL,
             _IONBF, 0);
 
-    printf("Test #1. Expect: (X|Y){0, 1, 2, ..., 199}\n");
+    printf("Test #1. Expect: (X|Y){0, 1, 2, ..., 199}%d \n", 1);
     test_1();
 
     // printf("\n\nTest #2. Expect: (libco-){200, 201, 202, ..., 399}\n");
