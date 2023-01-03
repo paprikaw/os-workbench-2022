@@ -52,7 +52,7 @@ CO *co_start(const char *name, void (*func)(void *), void *arg)
   if (!is_added_to_pool)
   {
     free(new_context);
-    return NULL;
+    exit(1);
   }
   return new_context;
 }
