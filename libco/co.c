@@ -96,14 +96,13 @@ void co_yield ()
     // 随机挑选一个状态为RUNNING或者NEW的协程
     int index = rand_index(CO_POOL_SIZE);
     CO *next_co = co_pool[index];
-    while (next_co != NULL)
-    {
-      if ((next_co->status != CO_RUNNING) && (next_co->status != CO_NEW))
-      {
 
-        index = rand_index(CO_POOL_SIZE);
-        next_co = co_pool[index];
-      }
+    while ((next_co != NULL) &&
+           (next_co->status != CO_RUNNING) &&
+           (next_co->status != CO_NEW))
+    {
+      index = rand_index(CO_POOL_SIZE);
+      next_co = co_pool[index];
     }
 
     // 跳转到这个协程
