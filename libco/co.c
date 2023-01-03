@@ -97,9 +97,9 @@ void co_yield ()
     int index = rand_index(CO_POOL_SIZE);
     CO *next_co = co_pool[index];
 
-    while ((next_co != NULL) &&
-           (next_co->status != CO_RUNNING) &&
-           (next_co->status != CO_NEW))
+    while ((next_co == NULL) ||
+           ((next_co->status != CO_RUNNING) &&
+            (next_co->status != CO_NEW)))
     {
       index = rand_index(CO_POOL_SIZE);
       next_co = co_pool[index];
