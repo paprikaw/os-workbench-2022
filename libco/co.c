@@ -98,23 +98,25 @@ void co_yield ()
       next_co = co_pool[index];
     }
 
-    // 跳转到这个协程
+    // 跳转到被选择的协程
     current = next_co;
     if (current->status == CO_NEW)
     {
       current->status = CO_RUNNING;
       stack_switch_call(current->stack, current->func, (uintptr_t)current->arg);
       current->status = CO_DEAD;
+      // 跳转回waiter的协程
       current = current->waiter;
     }
     else
     {
+      // 跳转到相应的procedure执行 --- 1
       longjmp(current->context, 1);
     }
   }
   else
   {
-    // 跳转到新的协程，直接开始运行程序
+    // 跳转到相应的procedure执行 --- 2
     return;
   }
 }
