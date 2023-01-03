@@ -9,10 +9,6 @@
 #define SET_JUMP_TRUE_RETURN 1
 #define SET_JUMP_FAKE_RETURN 0
 
-
-CO *co_pool[CO_POOL_SIZE]; // 用来储存所有的协程
-CO *current;
-
 /* 协程库的主要数据结构 */
 enum co_status
 {
@@ -33,6 +29,9 @@ typedef struct co
   jmp_buf context;           // 寄存器现场 (setjmp.h)
   uint8_t stack[STACK_SIZE]; // 协程的堆栈
 } CO;
+
+CO *co_pool[CO_POOL_SIZE]; // 用来储存所有的协程
+CO *current;
 
 /* Helper function */
 static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg);
@@ -87,8 +86,8 @@ void co_wait(CO *co)
 void co_yield ()
 {
   // 每一次调用co_yield的时候，都进行一次wait_process的checking工作
-  
-  // 进行当前协程的现场保存 
+
+  // 进行当前协程的现场保存
   int val = setjmp(current->context);
   // 第一次执行co_yield, setjump返回真的value
   if (val == SET_JUMP_TRUE_RETURN)
