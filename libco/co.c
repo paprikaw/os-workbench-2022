@@ -59,6 +59,13 @@ CO *co_start(const char *name, void (*func)(void *), void *arg)
 
 void co_wait(CO *co)
 {
+  // 如果co已经结束，则直接清理
+  if (co->status == CO_DEAD)
+  {
+    clean_co(co);
+    return;
+  }
+
   // 当main函数第一次调用co_wait的时候，由于main本身
   // 也是一个协程，所以需要将main本身也加入到协程池中
   if (current == NULL)
@@ -69,13 +76,19 @@ void co_wait(CO *co)
 
   co->waiter = current;
   current->status = CO_WAITING;
-  // 开始执行协程
+  // 开始执行协程池中的协程，直到协程池返回了需要执行的协程
   co_yield ();
-  // 协程已经执行结束，清理协程的structure, 并且释放协程池中的协程
-  co_pool[co->index] = NULL;
-  free(co);
+  while (current != co)
+  {
+    co_yield ();
+  }
+
+  // current协程变更为current的waiter
+  current = current->waiter;
   // 将本协程的状态重新切换为running，然后开始随机选择协程运行
   current->status = CO_RUNNING;
+  // 清理协程
+  clean_co(co);
   co_yield ();
 }
 
@@ -105,8 +118,6 @@ void co_yield ()
       current->status = CO_RUNNING;
       stack_switch_call(current->stack, current->func, (uintptr_t)current->arg);
       current->status = CO_DEAD;
-      // 跳转回waiter的协程
-      current = current->waiter;
     }
     else
     {
@@ -178,4 +189,10 @@ int add_to_pool(CO *new_context)
     }
   }
   return is_added_to_pool;
+}
+
+clean_co(CO *co)
+{
+  co_pool[co->index] = NULL;
+  free(co);
 }
