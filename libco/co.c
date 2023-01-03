@@ -8,8 +8,7 @@
 #define STACK_SIZE 8192
 #define MAX_NAME_SIZE 256
 #define CO_POOL_SIZE 8
-#define SET_JUMP_TRUE_RETURN 1
-#define SET_JUMP_FAKE_RETURN 0
+#define SET_JUMP_TRUE_RETURN 0
 
 /* 协程库的主要数据结构 */
 enum co_status
