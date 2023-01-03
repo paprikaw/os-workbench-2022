@@ -138,9 +138,8 @@ static void test_2()
 
 int main()
 {
-    setvbuf(stdout, NULL,
-            _IONBF, 0);
 
+    setbuf(stdout, NULL);
     printf("Test #1. Expect: (X|Y){0, 1, 2, ..., 199}%d \n", 1);
     test_1();
 
