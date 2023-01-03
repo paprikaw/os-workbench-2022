@@ -3,8 +3,10 @@
 #include <setjmp.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define STACK_SIZE 8192
+#define MAX_NAME_SIZE 256
 #define CO_POOL_SIZE 8
 #define SET_JUMP_TRUE_RETURN 1
 #define SET_JUMP_FAKE_RETURN 0
@@ -143,12 +145,16 @@ int rand_index(int length)
 {
   return rand() % length;
 }
+
 // Create a new corouting
 CO *create_co(const char *name, void (*func)(void *), void *arg, enum co_status status, CO *waiter)
 {
   // 创建一个新的携程context
   CO *new_context = malloc(sizeof(CO));
-  new_context->name = name;
+  // Allocate space for name
+  char *name_buf = malloc(MAX_NAME_SIZE * sizeof(char));
+  strncpy(name_buf, name, MAX_NAME_SIZE);
+  new_context->name = name_buf;
   new_context->func = func;
   new_context->arg = arg;
   new_context->status = status;
