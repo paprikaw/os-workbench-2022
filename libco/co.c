@@ -158,7 +158,7 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg)
     pop %%r12 // 恢复caller saved的rsp
   */
   asm volatile(
-      "push %%r12; movq %%rsp, %%r12; movq %0, %%rsp; movq %2, %%rdi;   add $12, %%rsp; call *%1; movq %%r12, %%rsp; pop %%r12"
+      "push %%r12; movq %%rsp, %%r12; movq %0, %%rsp; movq %2, %%rdi; add $12, %%rsp; call *%1; movq %%r12, %%rsp; pop %%r12"
       :
       : "b"((uintptr_t)sp), "d"(entry), "a"(arg)
       : "memory");
