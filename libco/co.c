@@ -35,6 +35,7 @@ typedef struct co
 
 CO *co_pool[CO_POOL_SIZE]; // 用来储存所有的协程
 CO *current;
+CO *main;
 
 /* Helper function */
 static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg);
@@ -73,6 +74,7 @@ void co_wait(CO *co)
   if (current == NULL)
   {
     current = create_co("main", NULL, NULL, CO_WAITING, NULL);
+    main = current;
     add_to_pool(current);
   }
 
@@ -86,8 +88,6 @@ void co_wait(CO *co)
 
 void co_yield ()
 {
-  assert(current->status != CO_DEAD);
-  // 进行当前协程的现场保存
   int val = setjmp(current->context);
   // 第一次执行co_yield, setjump返回真的value
   if (val == SET_JUMP_TRUE_RETURN)
@@ -117,8 +117,12 @@ void co_yield ()
       {
         current->waiter->status = CO_RUNNING;
         current = current->waiter;
-        co_yield ();
       }
+      else
+      {
+        current = main;
+      }
+      co_yield ();
     }
     else
     {
