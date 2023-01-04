@@ -35,7 +35,7 @@ typedef struct co
 
 CO *co_pool[CO_POOL_SIZE]; // 用来储存所有的协程
 CO *current;
-CO *main;
+CO *main_co;
 
 /* Helper function */
 static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg);
@@ -74,7 +74,7 @@ void co_wait(CO *co)
   if (current == NULL)
   {
     current = create_co("main", NULL, NULL, CO_WAITING, NULL);
-    main = current;
+    main_co = current;
     add_to_pool(current);
   }
 
@@ -120,7 +120,7 @@ void co_yield ()
       }
       else
       {
-        current = main;
+        current = main_co;
       }
       co_yield ();
     }
