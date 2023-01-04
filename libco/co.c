@@ -182,7 +182,7 @@ int rand_index(int length)
 CO *create_co(const char *name, void (*func)(void *), void *arg, enum co_status status, CO *waiter)
 {
   // 创建一个新的携程context
-  CO *new_context = malloc(sizeof(CO));
+  CO *new_context = calloc(1, sizeof(CO));
   // Allocate space for name
   char *name_buf = (char *)malloc(MAX_NAME_SIZE * sizeof(char));
   strncpy(name_buf, name, MAX_NAME_SIZE);
@@ -191,8 +191,6 @@ CO *create_co(const char *name, void (*func)(void *), void *arg, enum co_status 
   new_context->arg = arg;
   new_context->status = status;
   new_context->waiter = waiter;
-  memset(new_context->context, 0, sizeof(jmp_buf));
-  memset(new_context->stack, 0, STACK_SIZE);
 
   return new_context;
 }
