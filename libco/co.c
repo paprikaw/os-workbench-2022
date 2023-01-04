@@ -117,7 +117,7 @@ void co_yield ()
     if (current->status == CO_NEW)
     {
       current->status = CO_RUNNING;
-      stack_switch_call((current->stack + STACK_SIZE), current->func, (uintptr_t)current->arg);
+      stack_switch_call((current->stack + STACK_SIZE - 8), current->func, (uintptr_t)current->arg);
       current->status = CO_DEAD;
     }
     else
