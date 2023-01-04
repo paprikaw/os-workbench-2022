@@ -115,6 +115,7 @@ void co_yield ()
       {
         current->waiter->status = CO_RUNNING;
       }
+      current = current->waiter;
       co_yield ();
     }
     else
