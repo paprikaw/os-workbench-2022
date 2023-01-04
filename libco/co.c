@@ -86,7 +86,7 @@ void co_wait(CO *co)
 
 void co_yield ()
 {
-  assert(current->status == CO_DEAD);
+  assert(current->status != CO_DEAD);
   // 进行当前协程的现场保存
   int val = setjmp(current->context);
   // 第一次执行co_yield, setjump返回真的value
