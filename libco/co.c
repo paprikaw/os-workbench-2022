@@ -215,5 +215,6 @@ int add_to_pool(CO *new_context)
 void clean_co(CO *co)
 {
   co_pool[co->index] = NULL;
+  free(co->name);
   free(co);
 }
