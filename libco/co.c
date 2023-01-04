@@ -182,7 +182,7 @@ CO *create_co(const char *name, void (*func)(void *), void *arg, enum co_status 
   // 创建一个新的携程context
   CO *new_context = malloc(sizeof(CO));
   // Allocate space for name
-  char *name_buf = malloc(MAX_NAME_SIZE * sizeof(char));
+  char *name_buf = (char *)malloc(MAX_NAME_SIZE * sizeof(char));
   strncpy(name_buf, name, MAX_NAME_SIZE);
   new_context->name = name_buf;
   new_context->func = func;
