@@ -29,7 +29,6 @@ typedef struct co
   struct co *waiter;         // 是否有其他协程在等待当前协程
   jmp_buf context;           // 寄存器现场 (setjmp.h)
   int index;                 // 协程的在线程池中的index
-  char padding[256];         // 16字节padding
   uint8_t stack[STACK_SIZE]; // 协程的堆栈
 } CO;
 
@@ -137,19 +136,32 @@ void co_yield ()
 /* Implementations of helper functions */
 static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg)
 {
+  /*
+    push %%r12 // r12为caller saved，需要推入栈
+
+    movq %%rsp, %%r12 // 将现在的rsp暂时保存到r12中
+
+    将rsp切换到对应协程的栈上，注意协程的栈内存是由malloc分配在堆上的，
+    已知我们使用malloc allocate的栈的地址，
+    我们需要将栈地址+栈大小的地址赋给这里的rsp
+    movq %0, %%rsp
+
+    movq %2, %%rdi // arg
+
+    16 byte alignment, 具体请看: https://stackoverflow.com/questions/49391001/why-does-the-x86-64-amd64-system-v-abi-mandate-a-16-byte-stack-alignment
+    add $12, %%rsp
+
+    call *%1 // call协程对应的function
+
+    movq %%r12, %%rsp // 恢复rsp的值
+
+    pop %%r12 // 恢复caller saved的rsp
+  */
   asm volatile(
-#if __x86_64__
       "push %%r12; movq %%rsp, %%r12; movq %0, %%rsp; movq %2, %%rdi;   add $12, %%rsp; call *%1; movq %%r12, %%rsp; pop %%r12"
       :
       : "b"((uintptr_t)sp), "d"(entry), "a"(arg)
-      : "memory"
-#else
-      "movl %0, %%esp; movl %2, 4(%0); jmp *%1"
-      :
-      : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg)
-      : "memory"
-#endif
-  );
+      : "memory");
 }
 
 // Given a length of an array, return a random index
