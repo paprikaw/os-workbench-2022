@@ -44,6 +44,7 @@ CO *create_co(const char *name, void (*func)(void *), void *arg, enum co_status 
 int add_to_pool(CO *new_context);
 void clean_co(CO *co);
 CO *select_co();
+void run_co(CO *co);
 
 /* 协程库主要的routine */
 CO *co_start(const char *name, void (*func)(void *), void *arg)
@@ -94,28 +95,7 @@ void co_yield ()
   if (val == SET_JUMP_TRUE_RETURN)
   {
     CO *next_co = select_co();
-
-    // 跳转到被选择的协程
-    current = next_co;
-    if (current->status == CO_NEW)
-    {
-      current->status = CO_RUNNING;
-      stack_switch_call((current->stack + STACK_SIZE - 20), current->func, (uintptr_t)current->arg);
-      // 本协程已经执行结束
-      current->status = CO_DEAD;
-      // 如果本协程有waiter，则将waiter的状态切换成running
-      if (current->waiter != NULL)
-      {
-        current->waiter->status = CO_RUNNING;
-      }
-      current = select_co();
-      co_yield ();
-    }
-    else
-    {
-      // 跳转到相应的procedure执行 --- 1
-      longjmp(current->context, 1);
-    }
+    run_co(next_co);
   }
   else
   {
@@ -225,4 +205,27 @@ CO *select_co()
     next_co = co_pool[index];
   }
   return next_co;
+}
+
+void run_co(CO *co)
+{
+  if (co->status == CO_NEW)
+  {
+    co->status = CO_RUNNING;
+    stack_switch_call((co->stack + STACK_SIZE - 20), co->func, (uintptr_t)co->arg);
+    // 本协程已经执行结束
+    co->status = CO_DEAD;
+    // 如果本协程有waiter，则将waiter的状态切换成running
+    if (co->waiter != NULL)
+    {
+      co->waiter->status = CO_RUNNING;
+    }
+    co = select_co();
+    run_co(co);
+  }
+  else
+  {
+    // 跳转到相应的procedure执行 --- 1
+    longjmp(co->context, 1);
+  }
 }
