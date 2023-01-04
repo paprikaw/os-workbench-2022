@@ -228,4 +228,5 @@ void run_co(CO *co)
     // 跳转到相应的procedure执行 --- 1
     longjmp(co->context, 1);
   }
+  return;
 }
