@@ -79,13 +79,6 @@ void co_wait(CO *co)
   current->status = CO_WAITING;
   // 开始执行协程池中的协程，直到协程池返回了需要执行的协程
   co_yield ();
-  while (current != co)
-  {
-    co_yield ();
-  }
-
-  // current协程变更为current的waiter
-  current = current->waiter;
   // 将本协程的状态重新切换为running，然后开始随机选择协程运行
   current->status = CO_RUNNING;
   // 清理协程
@@ -118,7 +111,14 @@ void co_yield ()
     {
       current->status = CO_RUNNING;
       stack_switch_call((current->stack + STACK_SIZE - 20), current->func, (uintptr_t)current->arg);
+      // 本协程已经执行结束
       current->status = CO_DEAD;
+      // 如果本协程有waiter，则将waiter的状态切换成running
+      if (current->waiter != NULL)
+      {
+        current->waiter->status = CO_RUNNING;
+      }
+      co_yield ();
     }
     else
     {
