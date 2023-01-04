@@ -157,11 +157,18 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg)
 
     pop %%r12 // 恢复caller saved的rsp
   */
+#if __x86_64__
   asm volatile(
       "push %%r12; movq %%rsp, %%r12; movq %0, %%rsp; movq %2, %%rdi; add $12, %%rsp; call *%1; movq %%r12, %%rsp; pop %%r12"
       :
       : "b"((uintptr_t)sp), "d"(entry), "a"(arg)
       : "memory");
+#else
+      "movl %0, %%esp; movl %2, 4(%0); jmp *%1"
+      :
+      : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg)
+      : "memory");
+#endif
 }
 
 // Given a length of an array, return a random index
