@@ -117,7 +117,7 @@ void co_yield ()
     if (current->status == CO_NEW)
     {
       current->status = CO_RUNNING;
-      stack_switch_call((current->stack + STACK_SIZE - 8), current->func, (uintptr_t)current->arg);
+      stack_switch_call((current->stack + STACK_SIZE - 12), current->func, (uintptr_t)current->arg);
       current->status = CO_DEAD;
     }
     else
@@ -159,7 +159,7 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg)
   */
   asm volatile(
 #if __x86_64__
-      "push %%r12; movq %%rsp, %%r12; movq %0, %%rsp; movq %2, %%rdi; sub $8, %%rsp; call *%1; movq %%r12, %%rsp; pop %%r12"
+      "push %%r12; movq %%rsp, %%r12; movq %0, %%rsp; movq %2, %%rdi; call *%1; movq %%r12, %%rsp; pop %%r12"
       :
       : "b"((uintptr_t)sp), "d"(entry), "a"(arg)
       : "memory");
