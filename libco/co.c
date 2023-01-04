@@ -92,17 +92,7 @@ void co_yield ()
   // 第一次执行co_yield, setjump返回真的value
   if (val == SET_JUMP_TRUE_RETURN)
   {
-    // 随机挑选一个状态为RUNNING或者NEW的协程
-    int index = rand_index(CO_POOL_SIZE);
-    CO *next_co = co_pool[index];
-
-    while ((next_co == NULL) ||
-           ((next_co->status != CO_RUNNING) &&
-            (next_co->status != CO_NEW)))
-    {
-      index = rand_index(CO_POOL_SIZE);
-      next_co = co_pool[index];
-    }
+    CO *next_co = select_co();
 
     // 跳转到被选择的协程
     current = next_co;
@@ -116,12 +106,8 @@ void co_yield ()
       if (current->waiter != NULL)
       {
         current->waiter->status = CO_RUNNING;
-        current = current->waiter;
       }
-      else
-      {
-        current = main_co;
-      }
+      current = select_co();
       co_yield ();
     }
     else
@@ -222,4 +208,20 @@ void clean_co(CO *co)
   co_pool[co->index] = NULL;
   free(co->name);
   free(co);
+}
+
+CO *select_co()
+{
+  // 随机挑选一个状态为RUNNING或者NEW的协程
+  int index = rand_index(CO_POOL_SIZE);
+  CO *next_co = co_pool[index];
+
+  while ((next_co == NULL) ||
+         ((next_co->status != CO_RUNNING) &&
+          (next_co->status != CO_NEW)))
+  {
+    index = rand_index(CO_POOL_SIZE);
+    next_co = co_pool[index];
+  }
+  return next_co;
 }
