@@ -191,6 +191,9 @@ CO *create_co(const char *name, void (*func)(void *), void *arg, enum co_status 
   new_context->arg = arg;
   new_context->status = status;
   new_context->waiter = waiter;
+  memset(new_context->context, 0, sizeof(jmp_buf));
+  memset(new_context->stack, 0, STACK_SIZE);
+
   return new_context;
 }
 
