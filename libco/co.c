@@ -43,9 +43,10 @@ int rand_index(int length);
 CO *create_co(const char *name, void (*func)(void *), void *arg, enum co_status status, CO *waiter);
 int add_to_pool(CO *new_context);
 void clean_co(CO *co);
+CO *select_co()
 
-/* 协程库主要的routine */
-CO *co_start(const char *name, void (*func)(void *), void *arg)
+    /* 协程库主要的routine */
+    CO *co_start(const char *name, void (*func)(void *), void *arg)
 {
   // 创建一个新的携程context
   CO *new_context = create_co(name, func, arg, CO_NEW, NULL);
