@@ -113,7 +113,7 @@ void run_co(CO *co)
     co->status = CO_RUNNING;
     stack_switch_call(co);
     // stack_switch之后的return的invalid的, 所以这个地方是unreachable的
-    assert(0);
+    // assert(0);
   }
   else
   {
