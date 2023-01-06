@@ -138,7 +138,7 @@ static inline void stack_switch_call(CO *co)
       : "memory");
 #else
       "" ::
-          : "memory")
+          : "memory");
 #endif
 }
 
