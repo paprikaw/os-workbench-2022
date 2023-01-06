@@ -38,7 +38,7 @@ CO *current;
 CO *main_co;
 
 /* Helper function */
-static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg);
+static inline void stack_switch_call(CO *co);
 int rand_index(int length);
 CO *create_co(const char *name, void (*func)(void *), void *arg, enum co_status status, CO *waiter);
 int add_to_pool(CO *new_context);
@@ -107,7 +107,7 @@ void co_yield ()
 }
 
 /* Implementations of helper functions */
-static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg)
+static inline void stack_switch_call(CO *co)
 {
   /*
     push %%r12 // r12为caller saved，需要推入栈
@@ -133,8 +133,8 @@ static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg)
   asm volatile(
 #if __x86_64__
       "movq %1, %%r10; movq %%rsp, %0; movq %%r10, %%rsp; movq %3, %%rdi; call *%2; movq %1, %%rsp"
-      : "=m"(sp)
-      : "m"((uintptr_t)sp), "d"(entry), "a"(arg)
+      : "=m"(co->stack)
+      : "m"((uintptr_t)(co->stack + STACK_SIZE - 20)), "d"(co->func), "a"(co->arg)
       : "memory");
 #else
       "movl %0, %%esp; movl %2, 4(%0); jmp *%1"
@@ -216,7 +216,7 @@ void run_co(CO *co)
   if (co->status == CO_NEW)
   {
     co->status = CO_RUNNING;
-    stack_switch_call((co->stack + STACK_SIZE - 20), co->func, (uintptr_t)co->arg);
+    stack_switch_call(co);
     // 本协程已经执行结束
     co->status = CO_DEAD;
     // 如果本协程有waiter，则将waiter的状态切换成running
