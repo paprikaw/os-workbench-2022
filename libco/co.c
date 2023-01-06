@@ -46,6 +46,8 @@ void clean_co(CO *co);
 CO *select_co();
 void run_co(CO *co);
 
+/* assert function */
+void assert_co();
 /* 协程库主要的routine */
 CO *co_start(const char *name, void (*func)(void *), void *arg)
 {
@@ -196,7 +198,7 @@ CO *select_co()
   // 随机挑选一个状态为RUNNING或者NEW的协程
   int index = rand_index(CO_POOL_SIZE);
   CO *next_co = co_pool[index];
-
+  assert_co();
   while ((next_co == NULL) ||
          ((next_co->status != CO_RUNNING) &&
           (next_co->status != CO_NEW)))
@@ -230,3 +232,18 @@ void run_co(CO *co)
   }
   return;
 }
+
+void assert_co()
+{
+  int is_one_can_select = 0;
+  // 检查协程池是否符合要求;
+  for (int i = 0; i < CO_POOL_SIZE; i++)
+  {
+    if ((co_pool[i]->status == CO_RUNNING) || (co_pool[i]->stack == CO_NEW))
+    {
+      is_one_can_select = 1;
+    }
+    assert(is_one_can_select);
+  }
+}
+`
