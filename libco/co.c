@@ -247,6 +247,6 @@ void assert_co()
     {
       is_one_can_select = 1;
     }
-    assert(is_one_can_select);
   }
+  assert(is_one_can_select);
 }
