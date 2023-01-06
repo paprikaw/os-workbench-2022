@@ -130,30 +130,13 @@ static inline void stack_switch_call(CO *co)
   movq %2, %%rdi
   movq %0, %%rsp
   call *%1
-    movq %%rsp, %%r12 // 将现在的rsp暂时保存到r12中
-
-    将rsp切换到对应协程的栈上，注意协程的栈内存是由malloc分配在堆上的，
-    已知我们使用malloc allocate的栈的地址，
-    我们需要将栈地址+栈大小的地址赋给这里的rsp
-    movq %0, %%rsp
-
-    movq %2, %%rdi // arg
-
-    16 byte alignment, 具体请看: https://stackoverflow.com/questions/49391001/why-does-the-x86-64-amd64-system-v-abi-mandate-a-16-byte-stack-alignment
-    add $12, %%rsp
-
-    call *%1 // call协程对应的function
-
-    movq %%r12, %%rsp // 恢复rsp的值
-
-    pop %%r12 // 恢复caller saved的rsp
   */
 
   asm volatile(
 #if __x86_64__
       "movq %2, %%rdi; movq %0, %%rsp; call *%1"
       :
-      : "b"((uintptr_t)(co->stack + STACK_SIZE - 20)), "d"(co->func), "a"(co->arg)
+      : "b"((uintptr_t)(co->stack + STACK_SIZE - 4)), "d"(co->func), "a"(co->arg)
       : "memory");
 #else
       "" ::
