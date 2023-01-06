@@ -133,8 +133,8 @@ static inline void stack_switch_call(CO *co)
 
   asm volatile(
 #if __x86_64__
-      "movq %3, %%rdi; movq %%rsp, %0; movq %1, %%rsp; call *%2"
-      : "=m"(co->rsp_backup)
+      "movq %2, %%rdi; movq %0, %%rsp; call *%1"
+      :
       : "b"((uintptr_t)(co->stack + STACK_SIZE - 16)), "d"(co->func), "a"(co->arg)
       : "memory");
 #else
