@@ -134,7 +134,7 @@ static inline void stack_switch_call(CO *co)
 #if __x86_64__
       "movq %1, %%r10; movq %%rsp, %0; movq %%r10, %%rsp; movq %3, %%rdi; call *%2; movq %1, %%rsp"
       : "=m"(co->stack)
-      : "m"((uintptr_t)(co->stack + STACK_SIZE - 20)), "d"(co->func), "a"(co->arg)
+      : "b"((uintptr_t)(co->stack + STACK_SIZE - 20)), "d"(co->func), "a"(co->arg)
       : "memory");
 #else
       "movl %0, %%esp; movl %2, 4(%0); jmp *%1"
