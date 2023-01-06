@@ -158,7 +158,7 @@ static inline void stack_switch_call(CO *co)
 // Given a length of an array, return a random index
 int rand_index(int length)
 {
-
+  srand48(48);
   return rand() % length;
 }
 
