@@ -239,7 +239,7 @@ void assert_co()
   // 检查协程池是否符合要求;
   for (int i = 0; i < CO_POOL_SIZE; i++)
   {
-    if ((co_pool[i]->status == CO_RUNNING) || (co_pool[i]->stack == CO_NEW))
+    if ((co_pool[i]->status == CO_RUNNING) || (co_pool[i]->status == CO_NEW))
     {
       is_one_can_select = 1;
     }
