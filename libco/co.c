@@ -246,4 +246,3 @@ void assert_co()
     assert(is_one_can_select);
   }
 }
-`
