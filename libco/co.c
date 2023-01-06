@@ -206,6 +206,7 @@ CO *select_co()
     index = rand_index(CO_POOL_SIZE);
     next_co = co_pool[index];
   }
+  assert((next_co->status == CO_RUNNING) || (next_co->status == CO_NEW));
   return next_co;
 }
 
