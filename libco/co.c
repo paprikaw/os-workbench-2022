@@ -10,7 +10,6 @@
 #define MAX_NAME_SIZE 256
 #define CO_POOL_SIZE 8
 #define SET_JUMP_TRUE_RETURN 0
-
 /* 协程库的主要数据结构 */
 enum co_status
 {
@@ -158,7 +157,6 @@ static inline void stack_switch_call(CO *co)
 // Given a length of an array, return a random index
 int rand_index(int length)
 {
-  srand(48);
   return rand() % length;
 }
 
