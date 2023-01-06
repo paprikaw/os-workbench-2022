@@ -25,11 +25,10 @@ typedef struct co
   void (*func)(void *); // co_start 指定的入口地址和参数
   void *arg;
 
-  enum co_status status; // 协程的状态
-  struct co *waiter;     // 是否有其他协程在等待当前协程
-  jmp_buf context;       // 寄存器现场 (setjmp.h)
-  int index;             // 协程的在线程池中的index
-  int64_t rsp_backup;
+  enum co_status status;     // 协程的状态
+  struct co *waiter;         // 是否有其他协程在等待当前协程
+  jmp_buf context;           // 寄存器现场 (setjmp.h)
+  int index;                 // 协程的在线程池中的index
   uint8_t stack[STACK_SIZE]; // 协程的堆栈
 } CO;
 
@@ -105,13 +104,32 @@ void co_yield ()
     return;
   }
 }
+/* Helper function */
+void run_co(CO *co)
+{
+  current = co;
+  if (co->status == CO_NEW)
+  {
+    co->status = CO_RUNNING;
+    stack_switch_call(co);
+    // stack_switch之后的return的invalid的, 所以这个地方是unreachable的
+    assert(0);
+  }
+  else
+  {
+    // 跳转到相应的procedure执行 --- 1
+    longjmp(co->context, 1);
+  }
+  return;
+}
 
 /* Implementations of helper functions */
 static inline void stack_switch_call(CO *co)
 {
   /*
-    push %%r12 // r12为caller saved，需要推入栈
-
+  movq %2, %%rdi
+  movq %0, %%rsp
+  call *%1
     movq %%rsp, %%r12 // 将现在的rsp暂时保存到r12中
 
     将rsp切换到对应协程的栈上，注意协程的栈内存是由malloc分配在堆上的，
@@ -141,8 +159,6 @@ static inline void stack_switch_call(CO *co)
       "" ::
           : "memory");
 #endif
-  // asm volatile("movq %0, %%rsp" ::"m"(current->rsp_backup)
-  //              : "memory");
 
   // 本协程已经执行结束
   current->status = CO_DEAD;
@@ -217,22 +233,6 @@ CO *select_co()
   }
   assert((next_co->status == CO_RUNNING) || (next_co->status == CO_NEW));
   return next_co;
-}
-
-void run_co(CO *co)
-{
-  current = co;
-  if (co->status == CO_NEW)
-  {
-    co->status = CO_RUNNING;
-    stack_switch_call(co);
-  }
-  else
-  {
-    // 跳转到相应的procedure执行 --- 1
-    longjmp(co->context, 1);
-  }
-  return;
 }
 
 void assert_co()
