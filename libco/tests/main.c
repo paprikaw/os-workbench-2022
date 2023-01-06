@@ -140,7 +140,7 @@ int main()
 {
 
     setbuf(stdout, NULL);
-    srand(200);
+    srand(7);
     printf("Test #1. Expect: (X|Y){0, 1, 2, ..., 199}%d \n", 1);
     test_1();
 
