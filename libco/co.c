@@ -137,7 +137,8 @@ static inline void stack_switch_call(CO *co)
       : "b"((uintptr_t)(co->stack + STACK_SIZE - 20)), "d"(co->func), "a"(co->arg)
       : "memory");
 #else
-  )
+      ::
+          : "memory")
 #endif
 }
 
