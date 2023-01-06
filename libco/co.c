@@ -26,10 +26,11 @@ typedef struct co
   void (*func)(void *); // co_start 指定的入口地址和参数
   void *arg;
 
-  enum co_status status;     // 协程的状态
-  struct co *waiter;         // 是否有其他协程在等待当前协程
-  jmp_buf context;           // 寄存器现场 (setjmp.h)
-  int index;                 // 协程的在线程池中的index
+  enum co_status status; // 协程的状态
+  struct co *waiter;     // 是否有其他协程在等待当前协程
+  jmp_buf context;       // 寄存器现场 (setjmp.h)
+  int index;             // 协程的在线程池中的index
+  int64_t rsp_backup;
   uint8_t stack[STACK_SIZE]; // 协程的堆栈
 } CO;
 
@@ -132,9 +133,9 @@ static inline void stack_switch_call(CO *co)
   */
   asm volatile(
 #if __x86_64__
-      "movq %1, %%r10; movq %%rsp, %0; movq %%r10, %%rsp; movq %3, %%rdi; call *%2; movq %4, %%rsp"
-      : "=m"(co->stack)
-      : "b"((uintptr_t)(co->stack + STACK_SIZE - 20)), "d"(co->func), "a"(co->arg), "m"(co->stack)
+      "movq %%rsp, %0; movq %1, %%rsp; movq %3, %%rdi; call *%2; movq %0, %%rsp"
+      : "+m"(co->rsp_backup)
+      : "b"((uintptr_t)(co->stack + STACK_SIZE - 20)), "d"(co->func), "a"(co->arg)
       : "memory");
 #else
       "" ::
