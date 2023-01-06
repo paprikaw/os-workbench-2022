@@ -142,6 +142,8 @@ static inline void stack_switch_call(CO *co)
       "" ::
           : "memory");
 #endif
+  asm volatile("movq %0, %%rsp" ::"m"(current->rsp_backup)
+               : "memory");
 }
 
 // Given a length of an array, return a random index
@@ -217,8 +219,6 @@ void run_co(CO *co)
   {
     co->status = CO_RUNNING;
     stack_switch_call(co);
-    asm volatile("movq %0, %%rsp" ::"m"(current->rsp_backup)
-                 : "memory");
     // 本协程已经执行结束
     co->status = CO_DEAD;
     // 如果本协程有waiter，则将waiter的状态切换成running
