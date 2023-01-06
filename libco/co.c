@@ -113,7 +113,7 @@ void run_co(CO *co)
     co->status = CO_RUNNING;
     stack_switch_call(co);
     // stack_switch之后的return的invalid的, 所以这个地方是unreachable的
-    // assert(0);
+    assert(0);
   }
   else
   {
@@ -153,7 +153,7 @@ static inline void stack_switch_call(CO *co)
 #if __x86_64__
       "movq %2, %%rdi; movq %0, %%rsp; call *%1"
       :
-      : "b"((uintptr_t)(co->stack + STACK_SIZE - 16)), "d"(co->func), "a"(co->arg)
+      : "b"((uintptr_t)(co->stack + STACK_SIZE - 12)), "d"(co->func), "a"(co->arg)
       : "memory");
 #else
       "" ::
