@@ -134,7 +134,7 @@ static inline void stack_switch_call(CO *co)
 
   asm volatile(
 #if __x86_64__
-      "movq %%rsp, %0; movq %1, %%rsp; movq %3, %%rdi; call *%2; movq %0, %%rsp"
+      "movq %%rsp, %0; movq %1, %%rsp; movq %3, %%rdi; call *%2"
       : "=m"(current->rsp_backup)
       : "b"((uintptr_t)(current->stack + STACK_SIZE - 16)), "d"(current->func), "a"(current->arg)
       : "memory");
@@ -142,6 +142,7 @@ static inline void stack_switch_call(CO *co)
       "" ::
           : "memory");
 #endif
+  asm volatile("movq %0, %%rsp" ::"m"(current->rsp_backup));
 }
 
 // Given a length of an array, return a random index
