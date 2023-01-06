@@ -211,6 +211,8 @@ CO *select_co()
 
 void run_co(CO *co)
 {
+  assert(current != co);
+  current = co;
   if (co->status == CO_NEW)
   {
     co->status = CO_RUNNING;
