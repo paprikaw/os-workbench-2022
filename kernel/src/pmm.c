@@ -1,7 +1,13 @@
 #include <common.h>
 
+#ifdef TEST
+#include <stdio.h>
+#include <stdlib.h>
+#endif
+
 static void *kalloc(size_t size)
 {
+  printf("alloc called\n");
   return NULL;
 }
 

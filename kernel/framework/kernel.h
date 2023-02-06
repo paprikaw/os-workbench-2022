@@ -41,6 +41,7 @@ MODULE(dev)
   void (*init)();
   device_t *(*lookup)(const char *name);
 };
+
 #endif
 
 MODULE(pmm)
