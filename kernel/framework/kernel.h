@@ -1,5 +1,6 @@
 #include <am.h>
 #include <stddef.h>
+
 #define MODULE(mod)                           \
   typedef struct mod_##mod##_t mod_##mod##_t; \
   extern mod_##mod##_t *mod;                  \
@@ -12,16 +13,22 @@
 
 #ifndef TEST
 typedef Context *(*handler_t)(Event, Context *);
+#endif
+
 MODULE(os)
 {
   void (*init)();
   void (*run)();
+#ifndef TEST
   Context *(*trap)(Event ev, Context * context);
   void (*on_irq)(int seq, int event, handler_t handler);
+#endif
 };
+
 typedef struct task task_t;
 typedef struct spinlock spinlock_t;
 typedef struct semaphore sem_t;
+
 MODULE(kmt)
 {
   void (*init)();
@@ -35,6 +42,7 @@ MODULE(kmt)
   void (*sem_signal)(sem_t * sem);
 };
 
+#ifndef TEST
 typedef struct device device_t;
 MODULE(dev)
 {
