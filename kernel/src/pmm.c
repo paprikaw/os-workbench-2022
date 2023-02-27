@@ -1,6 +1,9 @@
 #ifdef TEST
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <klib-macros.h>
+#include <assert.h>
 #else
 #include <klib.h>
 #endif
@@ -50,8 +53,19 @@
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
 /* heap checking */
-// #define HEAP_CHECK(lineno) checkheap(lineno)
-#define HEAP_CHECK(lineno)
+#define HEAP_CHECK(lineno) checkheap(lineno)
+// #define HEAP_CHECK(lineno)
+
+/* some assertion */
+
+// Assert that the address is valid
+// #define ASSERT_VALID_ADDRESS(addr)
+#define ASSERT_VALID_ADDRESS(addr)            \
+  {                                           \
+    assert(mem_sbrk <= memArea->end);         \
+    assert(addr > memArea->start);            \
+    assert(FTRP(addr) <= (memArea->end - 3)); \
+  }
 
 /* Private global variables */
 Area *memArea;          /* Get from os package */
@@ -61,7 +75,7 @@ static spinlock_t lock; /* Lock for heap */
 
 size_t mem_max_space;
 static void *mem_max_addr; /* Max legal heap addr plus 1*/
-static void *mem_brk;      /* break pointer for avaible address space */
+static void *mem_sbrk;     /* break pointer for avaible address space */
 
 /* Private global variable for implicit heap data structure*/
 static void *mem_heap; /* starter of the heap */
@@ -75,11 +89,27 @@ static void free_block(char *pos);
 static void split_space(char *cur_pos, size_t size);
 static void checkheap(int lineno);
 
+/* Memory management */
+void *mm_malloc(size_t size);
+void mm_free(void *ptr);
+void *mm_realloc(void *ptr, size_t size);
+static void *mm_sbrk(size_t incr);
+
 static void *kalloc(size_t size)
 {
+
+  void *space;
   kmt->spin_lock(&lock);
+  if ((space = mm_malloc(size)) == (void *)(-1))
+  {
+    printf("kalloc: malloc is failed\n");
+    kmt->spin_unlock(&lock);
+    return (void *)(-1);
+  }
+  printf("The allocated heap space is %d\n", GET_SIZE(HDRP(space)));
+  ASSERT_VALID_ADDRESS(space);
   kmt->spin_unlock(&lock);
-  return NULL;
+  return space;
 }
 
 static void kfree(void *ptr)
@@ -112,7 +142,6 @@ static void pmm_init()
 
   /* Initialize lock */
   kmt->spin_init(&lock, "mem_lock");
-  lock = &lock;
 
   /* Initialize mem_sbrk */
   mem_sbrk = (void *)memArea->start;
@@ -123,16 +152,13 @@ static void pmm_init()
   mem_max_addr = (void *)memArea->end;
 
   /* initializeheap内的数据结构，包括头节点和伪节点 */
-  if (mem_max_space <= 0)
-    ;
-  {
-    panic("The memory is not enough");
-  }
+  mem_max_space = 2 * WSIZE;
 
   /*构建padding block， 头节点和尾节点*/
   if ((mem_heap = mm_sbrk(4 * WSIZE)) == (void *)(-1))
   {
     panic("Failed to initialize the heap data structure");
+    return;
   }
   PUT(mem_heap, 0);
   PUT(mem_heap + WSIZE, PACK(DSIZE, 1));
@@ -141,13 +167,13 @@ static void pmm_init()
   mem_heap += (2 * WSIZE); // moved to the true start of the heap;
   mem_max_space = 2 * WSIZE;
 
-  if ((extend_heap(CHUNKSIZE / WSIZE)) == NULL)
+  if ((extend_heap(CHUNKSIZE / WSIZE)) == (void *)(-1))
   {
     panic("Failed to allocate the initial data block");
   }
 
   HEAP_CHECK(__LINE__);
-  return 0;
+  return;
 }
 
 /*
@@ -158,7 +184,7 @@ void *mm_malloc(size_t size)
 {
   HEAP_CHECK(__LINE__);
   size = ALIGN(size + 2 * WSIZE);
-  char *cur_pos = memArea->start;
+  char *cur_pos = mem_heap;
   char *new_space;
   size_t cur_size = 0;
   // interate throught the whole heap list
@@ -177,18 +203,20 @@ void *mm_malloc(size_t size)
     cur_pos = NEXT_BLKP(cur_pos);
   }
 
-  if (cur_pos >= mem_max_addr)
+  if ((void *)cur_pos >= mem_max_addr)
   {
 
     size_t allocate_size = size < CHUNKSIZE ? CHUNKSIZE : size;
-    if ((new_space = extend_heap(allocate_size / WSIZE)) == NULL)
+    if ((new_space = extend_heap(allocate_size / WSIZE)) == (void *)(-1))
     {
-      panic("space is not enough");
+      printf("mm_malloc: space is not enough\n");
+      return (void *)-1;
     }
     new_space = coalesce(new_space);
     split_space(new_space, size);
     HEAP_CHECK(__LINE__);
   }
+  ASSERT_VALID_ADDRESS(new_space);
   return new_space;
 }
 
@@ -257,9 +285,9 @@ static void *extend_heap(size_t words)
   size_t size;
   /* Allocate an even number of words to maintain alignment */
   size = (words % 2) ? (words + 1) * WSIZE : words * WSIZE;
-  if ((long)(bp = mem_sbrk(size)) == -1)
+  if ((long)(bp = mm_sbrk(size)) == -1)
   {
-    return NULL;
+    return (void *)-1;
   }
   /* Initialize free block header/footer and the epilogue header */
   PUT(HDRP(bp), PACK(size, 0)); /* Free block header */           // line:vm:mm:freeblockhdr
@@ -314,7 +342,7 @@ static void *coalesce(char *bp)
 static void checkheap(int lineno)
 
 {
-  char *cur_pos = memArea->start;
+  char *cur_pos = mem_heap;
   int is_prev_empty = 0;
   int is_coalesce = 1;
   int is_head_tail_equal = 1;
@@ -325,7 +353,7 @@ static void checkheap(int lineno)
   size_t size = 0;
 
   /* 检查prologue tag*/
-  if ((GET_SIZE(HDRP(memArea->start)) != DSIZE) || !GET_ALLOC(HDRP(memArea->start)))
+  if ((GET_SIZE(HDRP(mem_heap)) != DSIZE) || !GET_ALLOC(HDRP(mem_heap)))
     is_good_prologue = 0;
 
   // interate throught the whole heap list
@@ -350,7 +378,7 @@ static void checkheap(int lineno)
       }
     }
     /*检查一个block之前是否有一个boundary tag */
-    if ((cur_pos != memArea->start) && NEXT_BLKP(PREV_BLKP(cur_pos)) != cur_pos)
+    if ((cur_pos != mem_heap) && NEXT_BLKP(PREV_BLKP(cur_pos)) != cur_pos)
     {
 
       is_cloased_boundary = 0;
@@ -399,6 +427,11 @@ static void checkheap(int lineno)
 
   if (!is_good_prologue)
     panic("Bad prologue header");
+  /* 检查sbrk目前的值是否是有效的 */
+  if ((mem_sbrk <= 0) || (mem_sbrk > memArea->end))
+  {
+    panic("Bad sbrk value");
+  }
 }
 
 static void set_block(char *pos, size_t size, int is_allocate)
@@ -445,15 +478,15 @@ static void split_space(char *bp, size_t asize)
  *    by incr bytes and returns the start address of the new area. In
  *    this model, the heap cannot be shrunk.
  */
-void *mm_sbrk(size_t incr)
+static void *mm_sbrk(size_t incr)
 {
-  char *old_brk = mem_brk;
-  if ((incr < 0) || ((mem_brk + incr) > mem_max_addr))
+  char *old_brk = mem_sbrk;
+  if ((incr < 0) || ((mem_sbrk + incr) > mem_max_addr))
   {
-    panic("ERROR: mem_sbrk failed. Ran out of memory...");
+    printf("ERROR: mm_sbrk failed. Ran out of memory...\n");
     return (void *)-1;
   }
-  mem_brk += incr;
+  mem_sbrk += incr;
   return (void *)old_brk;
 }
 // size_t align(size_t size)

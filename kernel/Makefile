@@ -24,6 +24,6 @@ testall:
 	-ggdb \
 	-Iframework -Itest -DTEST -lpthread \
 	-o build/test
-	@build/test 0
+	@build/test 2
 
 .PHONY: testall
