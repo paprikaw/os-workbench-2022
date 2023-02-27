@@ -15,3 +15,9 @@ struct semaphore
 {
   // TODO
 };
+
+void panic(char *s)
+{
+  printf("size should not be zero");
+  exit(0);
+}

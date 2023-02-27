@@ -18,11 +18,12 @@ include ../Makefile.lab
 # 	@build/test
 # .PHONY: test
 
-test: 
+testall: 
 	@gcc src/pmm.c \
 	    $(shell find test/ -name "*.c") \
 	-ggdb \
 	-Iframework -Itest -DTEST -lpthread \
 	-o build/test
-	@build/test
-.PHONY: test
+	@build/test 0
+
+.PHONY: testall

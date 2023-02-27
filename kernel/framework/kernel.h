@@ -20,7 +20,7 @@ MODULE(os)
   void (*init)();
   void (*run)();
 #ifndef TEST
-  Context *(*trap)(Event ev, Context * context);
+  // Context *(*trap)(Event ev, Context * context);
   void (*on_irq)(int seq, int event, handler_t handler);
 #endif
 };
