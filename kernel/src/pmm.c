@@ -57,12 +57,16 @@
 Area *memArea;          /* Get from os package */
 static spinlock_t lock; /* Lock for heap */
 
+/* Private global variable for sbrk function */
+
+size_t mem_max_space;
 static void *mem_max_addr; /* Max legal heap addr plus 1*/
-// static size_t mem_max_space = 0; /* Max space for heap*/
-static void *mem_brk;
+static void *mem_brk;      /* break pointer for avaible address space */
+
+/* Private global variable for implicit heap data structure*/
+static void *mem_heap; /* starter of the heap */
 
 /* Helper function */
-size_t align(size_t size); /* round up a size to the nearest 2 ^ n */
 static void *extend_heap(size_t words);
 static void *coalesce(char *bp);
 static void set_block(char *pos, size_t size, int is_allocate);
@@ -143,34 +147,6 @@ static void pmm_init()
   }
 
   HEAP_CHECK(__LINE__);
-  /*
-  这里初始化了一个prologue and epilogue block， 第一个
-  位置是用来align address到double words的位置上的
-  */
-  // aligned block
-  PUT(memArea->start, 0);
-  // prologue block
-  PUT(memArea->start + WSIZE, PACK(DSIZE, 1));
-
-  /*
-    usable block, bp is the pointer to the
-    real usable address(one after header)
-  */
-  void *bp = memArea->start + (4 * WSIZE);
-  /*
-    4 * WSIZE = 1 * Alignment block
-    + 2 * prologue block
-    + 1 * epilogue block
-  */
-  size_t bp_size = ALIGN_DOWN(mem_max_space - 4 * WSIZE);
-  /*
-    Initialize free block header/footer and the epilogue header
-  */
-  PUT(HDRP(bp), PACK(bp_size, 0));
-  PUT(FTRP(bp), PACK(bp_size, 0));
-  PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1)); // epilogue block
-  memArea->start = bp;                  // moved to the true start of the heap;
-  HEAP_CHECK(__LINE__);
   return 0;
 }
 
@@ -207,7 +183,7 @@ void *mm_malloc(size_t size)
     size_t allocate_size = size < CHUNKSIZE ? CHUNKSIZE : size;
     if ((new_space = extend_heap(allocate_size / WSIZE)) == NULL)
     {
-      return NULL;
+      panic("space is not enough");
     }
     new_space = coalesce(new_space);
     split_space(new_space, size);
@@ -399,30 +375,30 @@ static void checkheap(int lineno)
         (total_space == mem_max_space) &&
         is_good_epilogue &&
         is_good_prologue))
-    printf("line %d: ", lineno);
+    panic("line");
 
   /*检查是否coalesce*/
   if (!is_coalesce)
-    printf("Free block is not coalescing in block %lx\n", (unsigned long int)cur_pos);
+    panic("Free block is not coalescing in block");
 
   /*检查头尾tag是否相同*/
   if (!is_head_tail_equal)
-    printf("head block is not the same with tail block \n");
+    panic("head block is not the same with tail block ");
 
   /*检查blocz之前的boundary tag是否是valid的*/
   if (!is_cloased_boundary)
-    printf("boundary is not closed\n");
+    panic("boundary is not closed");
 
   /* 检查memory space是否都可以被retreive到*/
   if (total_space != mem_max_space)
-    printf("space size error\n");
+    panic("space size error");
 
   /* 检查epilogue tag和prologue tag*/
   if (!is_good_epilogue)
-    printf("Bad epilogue header\n");
+    panic("Bad epilogue header");
 
   if (!is_good_prologue)
-    printf("Bad prologue header\n");
+    panic("Bad prologue header");
 }
 
 static void set_block(char *pos, size_t size, int is_allocate)
@@ -474,7 +450,7 @@ void *mm_sbrk(size_t incr)
   char *old_brk = mem_brk;
   if ((incr < 0) || ((mem_brk + incr) > mem_max_addr))
   {
-    panic(stderr, "ERROR: mem_sbrk failed. Ran out of memory...\n");
+    panic("ERROR: mem_sbrk failed. Ran out of memory...");
     return (void *)-1;
   }
   mem_brk += incr;
